@@ -1,0 +1,129 @@
+
+<section class="px-4 py-8">
+  <h1 class="text-3xl font-bold text-center mb-6">Unsettle Your Vibe</h1>
+
+  <div class="flex justify-center mb-4 space-x-2">
+    <button onclick="applyPreset('chill')" class="px-4 py-2 bg-purple-200 rounded-full">Chill</button>
+    <button onclick="applyPreset('bold')" class="px-4 py-2 bg-red-200 rounded-full">Bold</button>
+    <button onclick="applyPreset('lover')" class="px-4 py-2 bg-pink-200 rounded-full">Lover</button>
+  </div>
+
+  <ul id="keychain-preview" class="p-4 border rounded-md mb-2 space-y-2 bg-white shadow"></ul>
+  <p class="text-center font-semibold mb-4">Total: $<span id="total-price">0.00</span></p>
+
+  <div class="flex justify-center space-x-4">
+    <button onclick="saveCombo()" class="bg-black text-white px-4 py-2 rounded-full">Save Combo</button>
+    <button onclick="loadCombo()" class="bg-gray-800 text-white px-4 py-2 rounded-full">Load Combo</button>
+    <button onclick="resetCombo()" class="bg-red-500 text-white px-4 py-2 rounded-full">Reset</button>
+  </div>
+
+  <div id="toast" class="toast">This is a toast message</div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  function applyPreset(vibe) {
+    const preview = document.getElementById('keychain-preview');
+    const priceDisplay = document.getElementById('total-price');
+    let presetCharms = [];
+
+    if (vibe === 'chill') {
+      presetCharms = [{ name: 'Lavender Stone', price: 6.99 }, { name: 'Plush Cloud', price: 5.49 }];
+    } else if (vibe === 'bold') {
+      presetCharms = [{ name: 'Fireball Gem', price: 7.99 }, { name: 'Mini Lightning', price: 6.49 }];
+    } else if (vibe === 'lover') {
+      presetCharms = [{ name: 'Heart Locket', price: 8.99 }, { name: 'Rose Quartz', price: 6.99 }];
+    }
+
+    preview.innerHTML = '';
+    let total = 0;
+
+    presetCharms.forEach(charm => {
+      const li = document.createElement('li');
+      li.textContent = `${charm.name} - $${charm.price.toFixed(2)}`;
+      li.setAttribute('data-price', charm.price);
+      li.classList.add('border', 'px-3', 'py-2', 'rounded', 'bg-purple-50');
+      preview.appendChild(li);
+      total += charm.price;
+    });
+
+    priceDisplay.textContent = total.toFixed(2);
+  }
+
+  function saveCombo() {
+    const previewItems = document.querySelectorAll('#keychain-preview li');
+    const combo = [];
+    previewItems.forEach(li => {
+      const text = li.textContent;
+      const [name, priceText] = text.split(' - $');
+      combo.push({ name: name.trim(), price: parseFloat(priceText) });
+    });
+    localStorage.setItem('unsettleCombo', JSON.stringify(combo));
+    showToast('Combo saved!');
+  }
+
+  function loadCombo() {
+    const saved = localStorage.getItem('unsettleCombo');
+    if (!saved) {
+      showToast('No saved combo found.');
+      return;
+    }
+    const combo = JSON.parse(saved);
+    const preview = document.getElementById('keychain-preview');
+    const priceDisplay = document.getElementById('total-price');
+    preview.innerHTML = '';
+    let total = 0;
+    combo.forEach(charm => {
+      const li = document.createElement('li');
+      li.textContent = `${charm.name} - $${charm.price.toFixed(2)}`;
+      li.classList.add('border', 'px-3', 'py-2', 'rounded', 'bg-purple-50');
+      li.setAttribute('data-price', charm.price);
+      preview.appendChild(li);
+      total += charm.price;
+    });
+    priceDisplay.textContent = total.toFixed(2);
+    showToast('Combo loaded.');
+  }
+
+  function resetCombo() {
+    const preview = document.getElementById('keychain-preview');
+    const priceDisplay = document.getElementById('total-price');
+    preview.innerHTML = '';
+    priceDisplay.textContent = '0.00';
+    localStorage.removeItem('unsettleCombo');
+    showToast('Combo reset.');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const preview = document.getElementById('keychain-preview');
+    Sortable.create(preview, { animation: 150 });
+  });
+</script>
+
+<style>
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #111;
+    color: #fff;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.5rem;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1000;
+    transition: opacity 0.3s ease-in-out;
+  }
+  .toast.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+</style>
